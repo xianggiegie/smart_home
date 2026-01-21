@@ -1,0 +1,1 @@
+cmd_/home/book/Desktop/smarthome-master/smarthome-master/smarthome_driver/beep/built-in.o :=  rm -f /home/book/Desktop/smarthome-master/smarthome-master/smarthome_driver/beep/built-in.o; arm-buildroot-linux-gnueabihf-ar rcsD /home/book/Desktop/smarthome-master/smarthome-master/smarthome_driver/beep/built-in.o

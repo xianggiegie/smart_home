@@ -1,0 +1,11 @@
+{
+    "C_Cpp.errorSquiggles": "disabled",
+    "files.associations": {
+        "module.h": "c",
+        "kernel.h": "c",
+        "array": "c",
+        "string": "c",
+        "string_view": "c",
+        "fs.h": "c"
+    }
+}

@@ -1,0 +1,1 @@
+cmd_/home/dxg/alientek/kernel/linux_driver/smarthome_driver/ov2640/ov2640_camera_driver.o := arm-linux-gnueabihf-ld -EL    -r -o /home/dxg/alientek/kernel/linux_driver/smarthome_driver/ov2640/ov2640_camera_driver.o /home/dxg/alientek/kernel/linux_driver/smarthome_driver/ov2640/ov2640_driver.o /home/dxg/alientek/kernel/linux_driver/smarthome_driver/ov2640/ov2640_reg.o 
