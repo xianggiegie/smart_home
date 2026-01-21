@@ -19,23 +19,26 @@ WebapiRemote::WebapiRemote(QObject *parent)
     , started(false)
     , subscribed(false)
     , socket_connected(false)
-{
+{   // 生成随机token
     QUuid uuid = QUuid::createUuid();
     random_token = uuid.toString();
-
+    // 连接定时器
     connect(timer, &QTimer::timeout, this, &WebapiRemote::getDevOfGroupUrl);
 
+    // 配置SSL
     QSslConfiguration config;
     config.setPeerVerifyMode(QSslSocket::VerifyNone);
     config.setProtocol(QSsl::TlsV1SslV3);
     webSocket->setSslConfiguration(config);
 
+    // 连接WebSocket信号
     connect(webSocket, &QWebSocket::connected, this, &WebapiRemote::webSocketConnected);
+    // 处理二进制消息
     connect(webSocket, &QWebSocket::binaryMessageReceived, this, [this](const QByteArray &msg) {
         onBinaryMessageReceived(msg);
     });
 }
-
+// 设置设备号
 void WebapiRemote::setDeviceNumber(const QString &number)
 {
     device_number = number;
@@ -44,7 +47,7 @@ void WebapiRemote::setDeviceNumber(const QString &number)
         subscribeSingleDevice();
     }
 }
-
+// 获取设备号
 QString WebapiRemote::deviceNumber() const
 {
     return device_number;
@@ -61,17 +64,17 @@ WebapiRemote::~WebapiRemote()
         webSocket = nullptr;
     }
 }
-
+// 设置token
 void WebapiRemote::setToken(const QString &token)
 {
     api_token = token;
 }
-
+// 获取token
 QString WebapiRemote::token() const
 {
     return api_token;
 }
-
+// 启动
 void WebapiRemote::start()
 {
     if (started) {
@@ -81,17 +84,17 @@ void WebapiRemote::start()
 
     getOrgURL();
 }
-
+// 睡眠
 void WebapiRemote::sleep(double second)
 {
     usleep(static_cast<useconds_t>(second * 1000000));
 }
-
+// 获取组织URL
 void WebapiRemote::getOrgURL()
 {
     getDataFromWeb(QUrl(orgURL));
 }
-
+// 获取组列表URL
 void WebapiRemote::getGroupListUrl()
 {
     if (org_id.isEmpty()) {
@@ -100,7 +103,7 @@ void WebapiRemote::getGroupListUrl()
     groupListUrl = QStringLiteral("https://cloud.alientek.com/api/orgs/%1/grouplist").arg(org_id);
     getDataFromWeb(QUrl(groupListUrl));
 }
-
+// 获取设备组URL
 void WebapiRemote::getDevOfGroupUrl()
 {
     if (org_id.isEmpty() || group_id.isEmpty()) {
@@ -110,6 +113,7 @@ void WebapiRemote::getDevOfGroupUrl()
     getDataFromWeb(QUrl(devOfGroupUrl));
 }
 
+// 从Web获取数据
 void WebapiRemote::getDataFromWeb(const QUrl &url)
 {
     if (api_token.isEmpty()) {
@@ -132,6 +136,7 @@ void WebapiRemote::getDataFromWeb(const QUrl &url)
     connect(reply, &QNetworkReply::readyRead, this, &WebapiRemote::readyReadData);
 }
 
+// 读取数据
 void WebapiRemote::readyReadData()
 {
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
@@ -141,6 +146,7 @@ void WebapiRemote::readyReadData()
     dataString = QString::fromUtf8(reply->readAll());
 }
 
+// 回复完成
 void WebapiRemote::replyFinished()
 {
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
@@ -184,6 +190,7 @@ void WebapiRemote::replyFinished()
     }
 }
 
+// 解析组织ID
 void WebapiRemote::parseOrgId(const QString &data)
 {
     QRegularExpression re(QStringLiteral("\\\"id\\\":(\\d+)"));
@@ -193,6 +200,7 @@ void WebapiRemote::parseOrgId(const QString &data)
     }
 }
 
+// 解析组ID
 void WebapiRemote::parseGroupId(const QString &data)
 {
     QRegularExpression re(QStringLiteral("\\\"id\\\":(\\d+)"));
@@ -202,6 +210,7 @@ void WebapiRemote::parseGroupId(const QString &data)
     }
 }
 
+// 解析设备列表
 void WebapiRemote::parseDeviceList(const QString &data)
 {
     device_names.clear();
@@ -234,6 +243,7 @@ void WebapiRemote::parseDeviceList(const QString &data)
     }
 }
 
+// Websocket连接
 void WebapiRemote::webSocketConnected()
 {
     socket_connected = true;
@@ -241,6 +251,7 @@ void WebapiRemote::webSocketConnected()
     subscribeSingleDevice();
 }
 
+// 订阅单个设备
 void WebapiRemote::subscribeSingleDevice()
 {
     if (subscribed) {
@@ -256,6 +267,7 @@ void WebapiRemote::subscribeSingleDevice()
     subscribed = true;
 }
 
+// 发送命令
 void WebapiRemote::sendCmd(QString number, QByteArray cmd)
 {
     const QStringList list = number.split("");
@@ -268,6 +280,7 @@ void WebapiRemote::sendCmd(QString number, QByteArray cmd)
     webSocket->sendBinaryMessage(cmd);
 }
 
+// 发送命令消息
 void WebapiRemote::sendCmdMessage(QString number, QByteArray cmd, const QString &message)
 {
     const QStringList list = number.split("");
@@ -281,6 +294,7 @@ void WebapiRemote::sendCmdMessage(QString number, QByteArray cmd, const QString 
     webSocket->sendBinaryMessage(cmd);
 }
 
+// 发送命令
 void WebapiRemote::sendCommand(const QString &message)
 {
     if (device_number.isEmpty()) {
@@ -295,7 +309,7 @@ void WebapiRemote::sendCommand(const QString &message)
     cmd.append((char)0x03);
     sendCmdMessage(device_number, cmd, message);
 }
-
+// 接收二进制消息
 void WebapiRemote::onBinaryMessageReceived(const QByteArray &payload)
 {
     const QString msg = QString::fromUtf8(payload);
